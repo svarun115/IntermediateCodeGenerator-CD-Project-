@@ -1,0 +1,100 @@
+import re
+def print_blocks():
+    for block in range(len(blocks)):
+        print("BLOCK ",block+1)
+        temp = blocks[block]
+        for no in range(temp[0],temp[1]):
+            print(inp[no],end='')
+        print()
+
+def remove_cse():
+    for num in range(len(blocks)):
+        check_cse(blocks[num])
+
+def print_inter():
+    for line in inp:
+        if line:
+            print(line,end='')
+
+
+def check_cse(block):
+    cse_d = []
+    rhs = []
+    goto = 0
+    for no in range(block[0],block[1]):
+        temp = inp[no].split("=")
+        if 'goto' in inp[no]:
+            cse_d.append(inp[no])
+        else:
+            cse_d.append([temp[0].strip().rstrip(),temp[1].rstrip().strip()])
+            rhs.append(temp[1].rstrip().strip())
+    temp = set(rhs)
+    for ele in temp:
+        rhs.remove(ele)
+    for ele in rhs:
+        ids = re.findall("[a-zA-Z_]+[a-zA-Z0-9]*",ele)
+        flag = 0
+        for i in range(len(cse_d)):
+            if cse_d[i][1]==ele:
+                for j in range(i+1,len(cse_d)):
+                    if cse_d[i][0] in ids:
+                        break
+                    if cse_d[j][1]==ele:
+                        cse_d[j][1]=cse_d[i][0]
+    j = 0
+    for no in range(block[0],block[1]):
+        if 'goto' in cse_d[j]:
+            inp[no] = cse_d[j]
+            j+=1
+        else:
+            inp[no]=cse_d[j][0] + ' = ' + cse_d[j][1] + '\n'
+            j+=1
+    return cse_d
+
+def create_blocks():
+    for i in range(1,len(inp)):
+        if "goto" in inp[i]:
+            p=re.search(r'goto.*?([0-9]+)',inp[i])
+            goto.add(int(i)+1)
+            goto.add(int(p.groups()[0]))
+    uni = goto
+    temp = min(goto)
+    blocks.append([1,temp])
+    if temp in goto:
+        goto.remove(temp)
+    gofrom_cpy = list(goto)
+    prev = temp
+    while gofrom_cpy:
+        temp = min(gofrom_cpy)
+        blocks.append([prev,temp+1])
+        prev = temp+1
+        gofrom_cpy.remove(temp)
+    temp = temp + 1
+    blocks.append([temp,len(inp)])
+
+def write_inter():
+    out = open("out.txt","w")
+    for line in inp:
+        if line:
+            out.write(line)
+
+def write_block():
+    blk = open("blocks.txt","w")
+    for block in range(len(blocks)):
+        blk.write("BLOCK "+str(block+1))
+        blk.write('\n')
+        temp = blocks[block]
+        for no in range(temp[0],temp[1]):
+            blk.write(inp[no])
+        blk.write('\n')
+
+
+inp = open("for.txt","r").readlines()
+inp.insert(0,None)
+gofrom = set()
+goto = set()
+blocks=[]
+
+create_blocks()
+remove_cse()
+write_block()
